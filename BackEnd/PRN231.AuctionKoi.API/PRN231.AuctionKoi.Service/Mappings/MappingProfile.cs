@@ -17,6 +17,9 @@ namespace KoiAuction.Service.Mappings
             CreateMap<Payment, PaymentModel>()
                 //.ForMember(dest => dest.Order, opt => opt.MapFrom(x => x.Order))
                 .ReverseMap();
+            CreateMap<Auction, AuctionModel>()
+              .ReverseMap();
+
             CreateMap<UserAuction, UserAuctionModel>()
                .ForMember(dest => dest.FishCode, opt => opt.MapFrom(x => x.Fish.FishCode))
                .ForMember(dest => dest.FishName, opt => opt.MapFrom(x => x.Fish.FishName))

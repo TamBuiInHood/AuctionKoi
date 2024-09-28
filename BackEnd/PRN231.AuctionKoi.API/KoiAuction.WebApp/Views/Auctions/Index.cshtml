@@ -1,0 +1,101 @@
+﻿@model IEnumerable<KoiAuction.Repository.Entities.Auction>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.AuctionName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AuctionDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StartTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EndTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MinIncrement)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreateDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AutionMethod)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AuctionCode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TimeSpan)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Type)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.AuctionName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AuctionDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MinIncrement)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreateDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AutionMethod)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AuctionCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TimeSpan)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Type.TypeId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.AuctionId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.AuctionId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.AuctionId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

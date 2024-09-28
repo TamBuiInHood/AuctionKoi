@@ -13,6 +13,7 @@ namespace PRN231.AuctionKoi.Repository.UnitOfWork
         public ProposalRepository ProposalRepository{ get; }
         public UserAuctionRepository UserAuctionRepository { get; }
 
+        public AutionRepository AuctionRepository { get; }
 
 
     }

@@ -104,7 +104,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPaymentRepository,PaymentRepository>();
 builder.Services.AddScoped<IProposalRepository,ProposalRepository>();
 builder.Services.AddScoped<IUserAuctionRepository, UserAuctionRepository>();
-
+builder.Services.AddScoped<IAuctionService, AuctionService>();
+builder.Services.AddScoped<IAutionRepository, AutionRepository>();
 // Register servicies
 builder.Services.AddScoped<IPaymentService, PaymnetService>();
 builder.Services.AddScoped<IProposalService, ProposalService>();

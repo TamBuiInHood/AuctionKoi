@@ -50,7 +50,14 @@
             public const string GetNoPagin = Base + "/proposals/";
 
         }
-
+        public static class Auction
+        {
+            public const string GetAll = Base + "/auctions/";
+            public const string GetById = Base + "/auctions/{id}";
+            public const string Create = Base + "/auctions/";
+            public const string Update = Base + "/auctions/{id}";
+            public const string Delete = Base + "/auctions/{id}";
+        }
         public static class UserAuction
         {
             public const string Get = Base + "/user-auctions/";
