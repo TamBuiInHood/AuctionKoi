@@ -2,7 +2,6 @@
 using KoiAuction.Common;
 using KoiAuction.Repository.Entities;
 using KoiAuction.Service.Base;
-using KoiAuction.Service.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
@@ -24,20 +23,22 @@ namespace KoiAuction.WebApp.Controllers
         // GET: Auctions
         public async Task<IActionResult> Index()
         {
-            var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions");
+            var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<ServiceResult<PageEntity<Auction>>>(content);
+                var result = JsonConvert.DeserializeObject<BusinessResult<PageEntity<Auction>>>(content);
 
-                if (result != null && result.IsSuccess && result.Data != null)
+                if (result != null && result.Data != null)
                 {
-                    return View(result.Data);
+                    var auctions = result.Data.List; // Access the List field in the Data property
+                    return View(auctions); // Pass the list of auctions to the view
                 }
             }
 
-            return View(new PageEntity<Auction> { List = new List<Auction>() });
+            return View(new List<Auction>()); // In case of failure, return an empty list
         }
+
 
         // GET: Auctions/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -51,63 +52,90 @@ namespace KoiAuction.WebApp.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<ServiceResult<Auction>>(content);
+                var result = JsonConvert.DeserializeObject<BusinessResult>(content);
 
-                if (result != null && result.IsSuccess && result.Data != null)
+                if (result != null && result.Data != null)
                 {
-                    return View(result.Data);
+                    var auction = JsonConvert.DeserializeObject<Auction>(result.Data.ToString());
+
+                    // Check if the Type is null
+                    if (auction.Type == null)
+                    {
+                        ModelState.AddModelError(string.Empty, "Auction type information is missing.");
+                    }
+
+                    return View(auction);
                 }
             }
 
             return NotFound();
         }
 
+
         // GET: Auctions/Create
         public async Task<IActionResult> Create()
         {
-            var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions/types");
+            // Fetch auction types for the dropdown
+            var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/types");
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<ServiceResult<List<AuctionType>>>(content);
+                var result = JsonConvert.DeserializeObject<BusinessResult>(content);
 
-                if (result != null && result.IsSuccess && result.Data != null)
+                if (result != null && result.Data != null)
                 {
-                    ViewData["TypeId"] = new SelectList(result.Data, "TypeId", "TypeName");
-                    return View();
+                    var auctionTypes = JsonConvert.DeserializeObject<List<AuctionType>>(result.Data.ToString());
+                    ViewBag.TypeId = new SelectList(auctionTypes, "TypeId", "TypeName"); // Populate ViewBag
                 }
             }
+            else
+            {
+                // Handle error, for instance by adding a fallback option
+                ViewBag.TypeId = new SelectList(new List<AuctionType>());
+            }
 
-            return View(new Auction());
+            return View();
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AuctionId,AuctionName,AuctionDate,StartTime,EndTime,MinIncrement,Status,Description,CreateDate,AuctionMethod,AuctionCode,TimeSpan,TypeId")] Auction auction)
         {
+            // If the model state is not valid, reload the auction types for the dropdown
             if (!ModelState.IsValid)
             {
-                var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions/types");
+                // Fetch auction types again to repopulate the dropdown list in case of validation errors
+                var response = await _httpClient.GetAsync($"{Const.APIEndPoint}api/Auction/types");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<ServiceResult<List<AuctionType>>>(content);
-                    ViewData["TypeId"] = new SelectList(result.Data, "TypeId", "TypeName", auction.TypeId);
+                    var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+
+                    // Check if the response contains a successful status and auction types
+                    if (result != null  && result.Data != null)
+                    {
+                        var auctionTypes = JsonConvert.DeserializeObject<List<AuctionType>>(result.Data.ToString());
+                        ViewData["TypeId"] = new SelectList(auctionTypes, "TypeId", "TypeName", auction.TypeId);
+                    }
                 }
+
                 return View(auction);
             }
 
+            // If the model is valid, proceed with creating the auction
             var json = JsonConvert.SerializeObject(auction);
             var contentToPost = new StringContent(json, Encoding.UTF8, "application/json");
 
-            // Ensure the API endpoint is correct and absolute
-            var responsePost = await _httpClient.PostAsync($"{Const.APIEndPoint}api/Auction/auction-koi/auctions", contentToPost);
-
+            // Call the API to create the auction
+            var responsePost = await _httpClient.PostAsync($"{Const.APIEndPoint}api/Auction", contentToPost);
             if (responsePost.IsSuccessStatusCode)
             {
+                // If the creation is successful, redirect to the index
                 return RedirectToAction(nameof(Index));
             }
 
+            // If the API call fails, return the view with the current data
             return View(auction);
         }
 
@@ -120,24 +148,29 @@ namespace KoiAuction.WebApp.Controllers
                 return NotFound();
             }
 
-            var response = await _httpClient.GetAsync(Const.APIEndPoint + $"api/auction/{id}");
+            // Fetch the auction details
+            var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/" + id);
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var auction = JsonConvert.DeserializeObject<ServiceResult<Auction>>(content);
+                var result = JsonConvert.DeserializeObject<BusinessResult>(content);
 
-                if (auction != null && auction.IsSuccess && auction.Data != null)
+                if (result != null && result.Data != null)
                 {
-                    var typesResponse = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions/types");
+                    var auction = JsonConvert.DeserializeObject<Auction>(result.Data.ToString());
+
+                    // Fetch auction types for the dropdown
+                    var typesResponse = await _httpClient.GetAsync($"{Const.APIEndPoint}api/Auction/types");
                     if (typesResponse.IsSuccessStatusCode)
                     {
                         var typesContent = await typesResponse.Content.ReadAsStringAsync();
-                        var typesResult = JsonConvert.DeserializeObject<ServiceResult<List<AuctionType>>>(typesContent);
+                        var typesResult = JsonConvert.DeserializeObject<BusinessResult>(typesContent);
 
-                        if (typesResult != null && typesResult.IsSuccess && typesResult.Data != null)
+                        if (typesResult != null && typesResult.Data != null)
                         {
-                            ViewData["TypeId"] = new SelectList(typesResult.Data, "TypeId", "TypeName", auction.Data.TypeId);
-                            return View(auction.Data);
+                            var auctionTypes = JsonConvert.DeserializeObject<List<AuctionType>>(typesResult.Data.ToString());
+                            ViewData["TypeId"] = new SelectList(auctionTypes, "TypeId", "TypeName", auction.TypeId); // Populate ViewBag for dropdown
+                            return View(auction); // Pass auction to the view
                         }
                     }
                 }
@@ -145,6 +178,7 @@ namespace KoiAuction.WebApp.Controllers
 
             return NotFound();
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -157,14 +191,15 @@ namespace KoiAuction.WebApp.Controllers
 
             if (!ModelState.IsValid)
             {
-                var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions/types");
+                var response = await _httpClient.GetAsync($"{Const.APIEndPoint}api/Auction/types");
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<ServiceResult<List<AuctionType>>>(content);
-                    if (result != null && result.IsSuccess)
+                    var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                    if (result != null  && result.Data != null)
                     {
-                        ViewData["TypeId"] = new SelectList(result.Data, "TypeId", "TypeName", auction.TypeId);
+                        var auctionTypes = JsonConvert.DeserializeObject<List<AuctionType>>(result.Data.ToString());
+                        ViewData["TypeId"] = new SelectList(auctionTypes, "typeId", "typeName", auction.TypeId);
                     }
                 }
                 return View(auction);
@@ -183,35 +218,42 @@ namespace KoiAuction.WebApp.Controllers
             return View(auction);
         }
 
-        // DELETE: Auctions/Delete/5
+        // GET: Auctions/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var response = await _httpClient.GetAsync(Const.APIEndPoint + $"api/Auction/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+
+                if (result != null  && result.Data != null)
+                {
+                    var auction = JsonConvert.DeserializeObject<Auction>(result.Data.ToString());
+                    return View(auction);
+                }
+            }
+
+            return NotFound();
+        }
+
+        // POST: Auctions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            bool deleteStatus = false;
-
-            if (ModelState.IsValid)
-            {
-                var response = await _httpClient.DeleteAsync(Const.APIEndPoint + $"api/auction/{id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<ServiceResult<object>>(content);
-
-                    if (result != null && result.IsSuccess)
-                    {
-                        deleteStatus = true;
-                    }
-                }
-            }
-            if (deleteStatus)
+            var response = await _httpClient.DeleteAsync(Const.APIEndPoint + $"api/Auction/{id}");
+            if (response.IsSuccessStatusCode)
             {
                 return RedirectToAction(nameof(Index));
             }
-            else
-            {
-                return View();
-            }
+
+            return View();
         }
     }
 }

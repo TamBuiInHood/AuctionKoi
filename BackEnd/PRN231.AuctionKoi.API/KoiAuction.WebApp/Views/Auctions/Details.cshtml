@@ -76,12 +76,20 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.TimeSpan)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Type)
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Type.TypeName)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Type.TypeId)
+        <dd class="col-sm-10">
+            @if (Model.Type != null)
+            {
+                @Html.DisplayFor(model => model.Type.TypeName)
+            }
+            else
+            {
+                <span>Type information not available</span>
+            }
         </dd>
+
     </dl>
 </div>
 <div>

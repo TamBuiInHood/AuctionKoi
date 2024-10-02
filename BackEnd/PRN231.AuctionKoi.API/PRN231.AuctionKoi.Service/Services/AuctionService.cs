@@ -1,13 +1,13 @@
 ﻿using KoiAuction.BussinessModels.Pagination;
-using KoiAuction.BussinessModels.Proposal;
 using KoiAuction.Repository.Entities;
 using KoiAuction.Service.ISerivice;
 using PRN231.AuctionKoi.Repository.UnitOfWork;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using KoiAuction.Service.Base;
+using KoiAuction.Common;
 
 namespace KoiAuction.Service.Services
 {
@@ -20,221 +20,154 @@ namespace KoiAuction.Service.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<AuctionModel> CreateAuction(AuctionModel model)
+        public async Task<IBusinessResult> CreateAuction(Auction auction)
         {
-            var auctionEntity = new Auction
+            try
             {
-                AuctionName = model.AuctionName,
-                AuctionDate = model.AuctionDate,
-                StartTime = model.StartTime,
-                EndTime = model.EndTime,
-                MinIncrement = model.MinIncrement,
-                Status = model.Status,
-                Description = model.Description,
-                CreateDate = DateTime.Now,
-                AutionMethod = model.AutionMethod,  // Corrected property name from AutionMethod to AuctionMethod
-                AuctionCode = model.AuctionCode,
-                TimeSpan = model.TimeSpan,
-                TypeId = model.TypeId
-            };
+                auction.CreateDate = DateTime.Now;
 
-            await _unitOfWork.AuctionRepository.Insert(auctionEntity);
-            await _unitOfWork.SaveAsync();
-            return MapToAuctionModel(auctionEntity); // Convert to AuctionModel
+                await _unitOfWork.AuctionRepository.Insert(auction);
+                await _unitOfWork.SaveAsync();
+
+                return new BusinessResult(Const.SUCCESS_CREATE_CODE, Const.SUCCESS_CREATE_MSG, auction);
+            }
+            catch (Exception ex)
+            {
+                return new BusinessResult(Const.ERROR_EXCEPTION, ex.ToString());
+            }
         }
 
-        public async Task<bool> DeleteAuction(int id)
+        public async Task<IBusinessResult> DeleteAuction(int id)
         {
-            var auction = await _unitOfWork.AuctionRepository.GetByCondition(x => x.AuctionId == id);
-            if (auction == null)
+            try
             {
-                throw new Exception("This auction does not exist to delete");
-            }
-
-            _unitOfWork.AuctionRepository.Delete(auction);
-            return await _unitOfWork.SaveAsync() > 0;
-        }
-
-        public async Task<AuctionModel> GetAuctionById(int id)
-        {
-            var auction = await _unitOfWork.AuctionRepository.GetByCondition(x => x.AuctionId == id);
-            if (auction == null)
-            {
-                throw new Exception("This auction does not exist");
-            }
-            return MapToAuctionModel(auction); // Convert to AuctionModel
-        }
-
-        public async Task<PageEntity<AuctionModel>> GetAllAuctions(string? searchKey, string? orderBy, int? pageIndex = null, int? pageSize = null)
-        {
-            var auctions = await _unitOfWork.AuctionRepository.GetAll(); // Lấy tất cả phiên đấu giá
-
-            // Tìm kiếm
-            if (!string.IsNullOrEmpty(searchKey))
-            {
-                auctions = auctions.Where(a => a.AuctionName.Contains(searchKey) || a.AuctionCode.Contains(searchKey));
-            }
-
-            // Sắp xếp
-            if (!string.IsNullOrEmpty(orderBy))
-            {
-                auctions = orderBy.ToLower() switch
+                var auction = await _unitOfWork.AuctionRepository.GetByCondition(x => x.AuctionId == id);
+                if (auction == null)
                 {
-                    "name" => auctions.OrderBy(a => a.AuctionName),
-                    "date" => auctions.OrderBy(a => a.AuctionDate),
-                    _ => auctions.OrderBy(a => a.AuctionId)
-                };
+                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, "This auction does not exist to delete.");
+                }
+
+                _unitOfWork.AuctionRepository.Delete(auction);
+                if (await _unitOfWork.SaveAsync() > 0)
+                {
+                    return new BusinessResult(Const.SUCCESS_DELETE_CODE, Const.SUCCESS_DELETE_MSG);
+                }
+
+                return new BusinessResult(Const.FAIL_DELETE_CODE, Const.FAIL_DELETE_MSG);
             }
-
-            // Phân trang
-            var totalCount = auctions.Count();
-            var items = auctions.Skip((pageIndex ?? 0) * (pageSize ?? 10))
-                                .Take(pageSize ?? 10)
-                                .Select(auction => MapToAuctionModel(auction)) // Chuyển sang AuctionModel
-                                .ToList();
-
-            return new PageEntity<AuctionModel>
+            catch (Exception ex)
             {
-                TotalRecord = totalCount,
-                List = items
-            };
+                return new BusinessResult(Const.ERROR_EXCEPTION, ex.ToString());
+            }
         }
 
-
-        public async Task<AuctionUpdateModel> UpdateAuction(AuctionUpdateModel model)
+        public async Task<IBusinessResult> GetAuctionById(int id)
         {
-            // Tìm đấu giá cần cập nhật từ cơ sở dữ liệu
-            var auction = await _unitOfWork.AuctionRepository.GetByCondition(x => x.AuctionId == model.AuctionId);
-            if (auction == null)
+            try
             {
-                throw new Exception("This auction does not exist to update");
-            }
+                var auction = await _unitOfWork.AuctionRepository.GetAuctionByIdAsync(id);
+                if (auction == null)
+                {
+                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, "Auction not found.");
+                }
 
-            // So sánh từng thuộc tính và chỉ cập nhật nếu khác
-            if (!string.IsNullOrWhiteSpace(model.AuctionName) && model.AuctionName != auction.AuctionName)
+                return new BusinessResult(Const.SUCCESS_READ_CODE, Const.SUCCESS_READ_MSG, auction);
+            }
+            catch (Exception ex)
             {
-                auction.AuctionName = model.AuctionName;
+                return new BusinessResult(Const.ERROR_EXCEPTION, ex.ToString());
             }
-
-            if (model.AuctionDate.HasValue && model.AuctionDate.Value != auction.AuctionDate)
-            {
-                auction.AuctionDate = model.AuctionDate.Value;
-            }
-
-            if (model.StartTime.HasValue && model.StartTime.Value != auction.StartTime)
-            {
-                auction.StartTime = model.StartTime.Value;
-            }
-
-            if (model.EndTime.HasValue && model.EndTime.Value != auction.EndTime)
-            {
-                auction.EndTime = model.EndTime.Value;
-            }
-
-            if (model.MinIncrement.HasValue && model.MinIncrement.Value != auction.MinIncrement)
-            {
-                auction.MinIncrement = model.MinIncrement.Value;
-            }
-
-            if (!string.IsNullOrWhiteSpace(model.Status) && model.Status != auction.Status)
-            {
-                auction.Status = model.Status;
-            }
-
-            if (!string.IsNullOrWhiteSpace(model.Description) && model.Description != auction.Description)
-            {
-                auction.Description = model.Description;
-            }
-
-            if (model.AutionMethod.HasValue && model.AutionMethod.Value != auction.AutionMethod)
-            {
-                auction.AutionMethod = model.AutionMethod.Value;
-            }
-
-            if (!string.IsNullOrWhiteSpace(model.AuctionCode) && model.AuctionCode != auction.AuctionCode)
-            {
-                auction.AuctionCode = model.AuctionCode;
-            }
-
-            if (model.TimeSpan.HasValue && model.TimeSpan.Value != auction.TimeSpan)
-            {
-                auction.TimeSpan = model.TimeSpan.Value;
-            }
-
-            if (model.TypeId != auction.TypeId)
-            {
-                auction.TypeId = model.TypeId;
-            }
-
-            // Cập nhật đối tượng và lưu thay đổi vào cơ sở dữ liệu
-            _unitOfWork.AuctionRepository.Update(auction);
-            await _unitOfWork.SaveAsync();
-
-            // Trả về dữ liệu cập nhật dưới dạng AuctionUpdateModel
-            return MapToAuctionUpdateModel(auction);
         }
 
-
-        private AuctionUpdateModel MapToAuctionUpdateModel(Auction auction)
+        public async Task<IBusinessResult> GetAllAuctions(string? searchKey, string? orderBy, int? pageIndex = null, int? pageSize = null)
         {
-            return new AuctionUpdateModel
+            try
             {
-                AuctionId = auction.AuctionId,
-                AuctionName = auction.AuctionName,
-                AuctionDate = auction.AuctionDate,
-                StartTime = auction.StartTime,
-                EndTime = auction.EndTime,
-                MinIncrement = auction.MinIncrement,
-                Status = auction.Status,
-                Description = auction.Description,
-                CreateDate = auction.CreateDate,
-                AutionMethod = auction.AutionMethod, // Corrected property name
-                AuctionCode = auction.AuctionCode,
-                TimeSpan = auction.TimeSpan,
-                TypeId = auction.TypeId,
-                // TypeName = auction.Type.TypeName
+                var auctions = await _unitOfWork.AuctionRepository.GetAll();
 
-            };
+                if (!string.IsNullOrEmpty(searchKey))
+                {
+                    auctions = auctions.Where(a => a.AuctionName.Contains(searchKey) || a.AuctionCode.Contains(searchKey));
+                }
+
+                if (!string.IsNullOrEmpty(orderBy))
+                {
+                    auctions = orderBy.ToLower() switch
+                    {
+                        "name" => auctions.OrderBy(a => a.AuctionName),
+                        "date" => auctions.OrderBy(a => a.AuctionDate),
+                        _ => auctions.OrderBy(a => a.AuctionId)
+                    };
+                }
+
+                var totalCount = auctions.Count();
+                var items = auctions.Skip((pageIndex ?? 0) * (pageSize ?? 10))
+                                    .Take(pageSize ?? 10)
+                                    .ToList();
+
+                return new BusinessResult(Const.SUCCESS_READ_CODE, Const.SUCCESS_READ_MSG, new PageEntity<Auction>
+                {
+                    TotalRecord = totalCount,
+                    List = items
+                });
+            }
+            catch (Exception ex)
+            {
+                return new BusinessResult(Const.ERROR_EXCEPTION, ex.ToString());
+            }
         }
 
-        private AuctionModel MapToAuctionModel(Auction auction)
+        public async Task<IBusinessResult> UpdateAuction(Auction auction)
         {
-            return new AuctionModel
+            try
             {
-                AuctionId = auction.AuctionId,
-                AuctionName = auction.AuctionName,
-                AuctionDate = auction.AuctionDate,
-                StartTime = auction.StartTime,
-                EndTime = auction.EndTime,
-                MinIncrement = auction.MinIncrement,
-                Status = auction.Status,
-                Description = auction.Description,
-                CreateDate = auction.CreateDate,
-                AutionMethod = auction.AutionMethod, // Corrected property name
-                AuctionCode = auction.AuctionCode,
-                TimeSpan = auction.TimeSpan,
-                TypeId = auction.TypeId,
-               // TypeName = auction.Type.TypeName
+                var existingAuction = await _unitOfWork.AuctionRepository.GetByCondition(x => x.AuctionId == auction.AuctionId);
+                if (existingAuction == null)
+                {
+                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, "This auction does not exist to update.");
+                }
 
-            };
+                existingAuction.AuctionName = auction.AuctionName ?? existingAuction.AuctionName;
+                existingAuction.AuctionDate = auction.AuctionDate ?? existingAuction.AuctionDate;
+                existingAuction.StartTime = auction.StartTime ?? existingAuction.StartTime;
+                existingAuction.EndTime = auction.EndTime ?? existingAuction.EndTime;
+                existingAuction.MinIncrement = auction.MinIncrement ?? existingAuction.MinIncrement;
+                existingAuction.Status = auction.Status ?? existingAuction.Status;
+                existingAuction.Description = auction.Description ?? existingAuction.Description;
+                existingAuction.AutionMethod = auction.AutionMethod ?? existingAuction.AutionMethod;
+                existingAuction.AuctionCode = auction.AuctionCode ?? existingAuction.AuctionCode;
+                existingAuction.TimeSpan = auction.TimeSpan ?? existingAuction.TimeSpan;
+                existingAuction.TypeId = auction.TypeId;
+
+                _unitOfWork.AuctionRepository.Update(existingAuction);
+                await _unitOfWork.SaveAsync();
+
+                return new BusinessResult(Const.SUCCESS_UPDATE_CODE, Const.SUCCESS_UPDATE_MSG, existingAuction);
+            }
+            catch (Exception ex)
+            {
+                return new BusinessResult(Const.ERROR_EXCEPTION, ex.ToString());
+            }
         }
 
-        public async Task<List<AuctionTypeModel>> GetAuctionTypes()
+        public async Task<IBusinessResult> GetAuctionTypes()
         {
-            // Giả sử bạn có repository cho AuctionType
-            var auctionTypes = await _unitOfWork.AuctionRepository.GetAuctionTypes();
-            return auctionTypes.Select(at => new AuctionTypeModel
+            try
             {
-                TypeId = at.TypeId,
-                TypeName = at.TypeName
-            }).ToList();
-        }
+                var auctionTypes = await _unitOfWork.AuctionTypeRepository.GetAll();
 
-        public bool AuctionExists(int id)
-        {
-            return _unitOfWork.AuctionRepository.Any(a => a.AuctionId == id);
+                if (auctionTypes == null || !auctionTypes.Any())
+                {
+                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, "No auction types found.");
+                }
+
+                return new BusinessResult(Const.SUCCESS_READ_CODE, Const.SUCCESS_READ_MSG, auctionTypes);
+            }
+            catch (Exception ex)
+            {
+                return new BusinessResult(Const.ERROR_EXCEPTION, ex.ToString());
+            }
         }
 
     }
-
 }

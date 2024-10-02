@@ -1,4 +1,4 @@
-﻿@model KoiAuction.BussinessModels.Pagination.PageEntity<KoiAuction.Repository.Entities.Auction>
+﻿@model List<KoiAuction.Repository.Entities.Auction>
 
 @{
     ViewData["Title"] = "Index";
@@ -14,46 +14,46 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().AuctionName)
+                @Html.DisplayNameFor(model => model.First().AuctionName)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().AuctionDate)
+                @Html.DisplayNameFor(model => model.First().AuctionDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().StartTime)
+                @Html.DisplayNameFor(model => model.First().StartTime)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().EndTime)
+                @Html.DisplayNameFor(model => model.First().EndTime)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().MinIncrement)
+                @Html.DisplayNameFor(model => model.First().MinIncrement)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().Status)
+                @Html.DisplayNameFor(model => model.First().Status)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().Description)
+                @Html.DisplayNameFor(model => model.First().Description)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().CreateDate)
+                @Html.DisplayNameFor(model => model.First().CreateDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().AutionMethod)
+                @Html.DisplayNameFor(model => model.First().AutionMethod)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().AuctionCode)
+                @Html.DisplayNameFor(model => model.First().AuctionCode)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().TimeSpan)
+                @Html.DisplayNameFor(model => model.First().TimeSpan)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.List.First().Type)
+                @Html.DisplayNameFor(model => model.First().Type.TypeName)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model.List)
+        @foreach (var item in Model)
         {
             <tr>
                 <td>
@@ -90,8 +90,16 @@
                     @Html.DisplayFor(modelItem => item.TimeSpan)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Type.TypeName)
+                    @if (item.Type != null)
+                    {
+                        @Html.DisplayFor(modelItem => item.Type.TypeName)
+                    }
+                    else
+                    {
+                        <span>No Type</span>
+                    }
                 </td>
+
 
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.AuctionId">Edit</a> |
