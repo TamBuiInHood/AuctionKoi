@@ -50,6 +50,40 @@ namespace KoiAuction.API.Controllers
                 });
             }
         }
+        [HttpGet(APIRoutes.Auction.Type, Name = "Get AuctionType")]
+        public async Task<IActionResult> GetAuctionTypes()
+        {
+            try
+            {
+                var result = await _auctionService.GetAuctionTypes();
+                if (result != null && result.Any())
+                {
+                    return Ok(new BaseResponse
+                    {
+                        StatusCode = StatusCodes.Status200OK,
+                        Message = "Auction types retrieved successfully",
+                        Data = result,
+                        IsSuccess = true
+                    });
+                }
+
+                return NotFound(new BaseResponse
+                {
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = "No auction types found",
+                    IsSuccess = false
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new BaseResponse
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                    Message = ex.Message,
+                    IsSuccess = false
+                });
+            }
+        }
 
         [HttpPost(APIRoutes.Auction.Create, Name = "Create Auction")]
         public async Task<IActionResult> CreateAuction([FromBody] AuctionModel model)
@@ -125,7 +159,7 @@ namespace KoiAuction.API.Controllers
         }
 
         [HttpPut("{id:int}", Name = "Update Auction")]
-        public async Task<IActionResult> UpdateAuction(int id, [FromBody] AuctionModel model)
+        public async Task<IActionResult> UpdateAuction(int id, [FromBody] AuctionUpdateModel model)
         {
             if (model == null)
             {

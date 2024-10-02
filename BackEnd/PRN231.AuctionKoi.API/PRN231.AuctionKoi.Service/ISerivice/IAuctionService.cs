@@ -13,7 +13,11 @@ namespace KoiAuction.Service.ISerivice
         Task<AuctionModel> CreateAuction(AuctionModel model);
         Task<AuctionModel> GetAuctionById(int id);
         Task<PageEntity<AuctionModel>> GetAllAuctions(string? searchKey, string? orderBy, int? pageIndex = null, int? pageSize = null);
-        Task<AuctionModel> UpdateAuction(AuctionModel model);
+        Task<AuctionUpdateModel> UpdateAuction(AuctionUpdateModel model);
         Task<bool> DeleteAuction(int id);
+
+        // Thêm các phương thức còn thiếu
+        Task<List<AuctionTypeModel>> GetAuctionTypes(); // Lấy danh sách các loại đấu giá
+        bool AuctionExists(int id); // Kiểm tra sự tồn tại của một phiên đấu giá
     }
 }

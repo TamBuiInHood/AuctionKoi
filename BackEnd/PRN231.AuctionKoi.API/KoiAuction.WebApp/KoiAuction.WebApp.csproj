@@ -11,13 +11,16 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Exchange.WebServices" Version="2.2.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\KoiAuction.BussinessModels\KoiAuction.BussinessModels.csproj" />
     <ProjectReference Include="..\PRN231.AuctionKoi.API\KoiAuction.API.csproj" />
+    <ProjectReference Include="..\PRN231.AuctionKoi.Common\KoiAuction.Common.csproj" />
     <ProjectReference Include="..\PRN231.AuctionKoi.Repository\KoiAuction.Repository.csproj" />
+    <ProjectReference Include="..\PRN231.AuctionKoi.Service\KoiAuction.Service.csproj" />
   </ItemGroup>
 
 </Project>

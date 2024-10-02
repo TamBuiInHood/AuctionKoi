@@ -57,6 +57,7 @@
             public const string Create = Base + "/auctions/";
             public const string Update = Base + "/auctions/{id}";
             public const string Delete = Base + "/auctions/{id}";
+            public const string Type = Base + "/auctions/types";
         }
         public static class UserAuction
         {

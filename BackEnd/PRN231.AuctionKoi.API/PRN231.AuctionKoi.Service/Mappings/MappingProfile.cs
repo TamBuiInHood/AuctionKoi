@@ -19,6 +19,11 @@ namespace KoiAuction.Service.Mappings
                 .ReverseMap();
             CreateMap<Auction, AuctionModel>()
               .ReverseMap();
+            CreateMap<Auction, AuctionUpdateModel>()
+             .ReverseMap();
+
+             
+            CreateMap<AuctionType, AuctionTypeModel>().ReverseMap();
 
             CreateMap<UserAuction, UserAuctionModel>()
                .ForMember(dest => dest.FishCode, opt => opt.MapFrom(x => x.Fish.FishCode))

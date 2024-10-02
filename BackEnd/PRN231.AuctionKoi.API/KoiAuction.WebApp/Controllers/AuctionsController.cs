@@ -1,28 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using KoiAuction.BussinessModels.Pagination;
+using KoiAuction.Common;
+using KoiAuction.Repository.Entities;
+using KoiAuction.Service.Base;
+using KoiAuction.Service.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using KoiAuction.Repository.Entities;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace KoiAuction.WebApp.Controllers
 {
     public class AuctionsController : Controller
     {
-        private readonly Fa24Se1716Prn231G5KoiauctionContext _context;
+        private readonly HttpClient _httpClient;
 
-        public AuctionsController(Fa24Se1716Prn231G5KoiauctionContext context)
+        public AuctionsController(HttpClient httpClient)
         {
-            _context = context;
+            _httpClient = httpClient;
         }
 
         // GET: Auctions
         public async Task<IActionResult> Index()
         {
-            var fa24Se1716Prn231G5KoiauctionContext = _context.Auctions.Include(a => a.Type);
-            return View(await fa24Se1716Prn231G5KoiauctionContext.ToListAsync());
+            var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<ServiceResult<PageEntity<Auction>>>(content);
+
+                if (result != null && result.IsSuccess && result.Data != null)
+                {
+                    return View(result.Data);
+                }
+            }
+
+            return View(new PageEntity<Auction> { List = new List<Auction>() });
         }
 
         // GET: Auctions/Details/5
@@ -33,40 +47,70 @@ namespace KoiAuction.WebApp.Controllers
                 return NotFound();
             }
 
-            var auction = await _context.Auctions
-                .Include(a => a.Type)
-                .FirstOrDefaultAsync(m => m.AuctionId == id);
-            if (auction == null)
+            var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/" + id);
+            if (response.IsSuccessStatusCode)
             {
-                return NotFound();
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<ServiceResult<Auction>>(content);
+
+                if (result != null && result.IsSuccess && result.Data != null)
+                {
+                    return View(result.Data);
+                }
             }
 
-            return View(auction);
+            return NotFound();
         }
 
         // GET: Auctions/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["TypeId"] = new SelectList(_context.AuctionTypes, "TypeId", "TypeId");
-            return View();
+            var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions/types");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<ServiceResult<List<AuctionType>>>(content);
+
+                if (result != null && result.IsSuccess && result.Data != null)
+                {
+                    ViewData["TypeId"] = new SelectList(result.Data, "TypeId", "TypeName");
+                    return View();
+                }
+            }
+
+            return View(new Auction());
         }
 
-        // POST: Auctions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AuctionId,AuctionName,AuctionDate,StartTime,EndTime,MinIncrement,Status,Description,CreateDate,AutionMethod,AuctionCode,TimeSpan,TypeId")] Auction auction)
+        public async Task<IActionResult> Create([Bind("AuctionId,AuctionName,AuctionDate,StartTime,EndTime,MinIncrement,Status,Description,CreateDate,AuctionMethod,AuctionCode,TimeSpan,TypeId")] Auction auction)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(auction);
-                await _context.SaveChangesAsync();
+                var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions/types");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<ServiceResult<List<AuctionType>>>(content);
+                    ViewData["TypeId"] = new SelectList(result.Data, "TypeId", "TypeName", auction.TypeId);
+                }
+                return View(auction);
+            }
+
+            var json = JsonConvert.SerializeObject(auction);
+            var contentToPost = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // Ensure the API endpoint is correct and absolute
+            var responsePost = await _httpClient.PostAsync($"{Const.APIEndPoint}api/Auction/auction-koi/auctions", contentToPost);
+
+            if (responsePost.IsSuccessStatusCode)
+            {
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["TypeId"] = new SelectList(_context.AuctionTypes, "TypeId", "TypeId", auction.TypeId);
+
             return View(auction);
         }
+
 
         // GET: Auctions/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -76,88 +120,98 @@ namespace KoiAuction.WebApp.Controllers
                 return NotFound();
             }
 
-            var auction = await _context.Auctions.FindAsync(id);
-            if (auction == null)
+            var response = await _httpClient.GetAsync(Const.APIEndPoint + $"api/auction/{id}");
+            if (response.IsSuccessStatusCode)
             {
-                return NotFound();
+                var content = await response.Content.ReadAsStringAsync();
+                var auction = JsonConvert.DeserializeObject<ServiceResult<Auction>>(content);
+
+                if (auction != null && auction.IsSuccess && auction.Data != null)
+                {
+                    var typesResponse = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions/types");
+                    if (typesResponse.IsSuccessStatusCode)
+                    {
+                        var typesContent = await typesResponse.Content.ReadAsStringAsync();
+                        var typesResult = JsonConvert.DeserializeObject<ServiceResult<List<AuctionType>>>(typesContent);
+
+                        if (typesResult != null && typesResult.IsSuccess && typesResult.Data != null)
+                        {
+                            ViewData["TypeId"] = new SelectList(typesResult.Data, "TypeId", "TypeName", auction.Data.TypeId);
+                            return View(auction.Data);
+                        }
+                    }
+                }
             }
-            ViewData["TypeId"] = new SelectList(_context.AuctionTypes, "TypeId", "TypeId", auction.TypeId);
-            return View(auction);
+
+            return NotFound();
         }
 
-        // POST: Auctions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AuctionId,AuctionName,AuctionDate,StartTime,EndTime,MinIncrement,Status,Description,CreateDate,AutionMethod,AuctionCode,TimeSpan,TypeId")] Auction auction)
+        public async Task<IActionResult> Edit(int id, [Bind("AuctionId,AuctionName,AuctionDate,StartTime,EndTime,MinIncrement,Status,Description,CreateDate,AuctionMethod,AuctionCode,TimeSpan,TypeId")] Auction auction)
         {
             if (id != auction.AuctionId)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
+                var response = await _httpClient.GetAsync(Const.APIEndPoint + "api/Auction/auction-koi/auctions/types");
+                if (response.IsSuccessStatusCode)
                 {
-                    _context.Update(auction);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AuctionExists(auction.AuctionId))
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<ServiceResult<List<AuctionType>>>(content);
+                    if (result != null && result.IsSuccess)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        ViewData["TypeId"] = new SelectList(result.Data, "TypeId", "TypeName", auction.TypeId);
                     }
                 }
+                return View(auction);
+            }
+
+            var json = JsonConvert.SerializeObject(auction);
+            var contentToPost = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var responsePut = await _httpClient.PutAsync($"{Const.APIEndPoint}api/Auction/{id}", contentToPost);
+
+            if (responsePut.IsSuccessStatusCode)
+            {
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["TypeId"] = new SelectList(_context.AuctionTypes, "TypeId", "TypeId", auction.TypeId);
-            return View(auction);
-        }
-
-        // GET: Auctions/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var auction = await _context.Auctions
-                .Include(a => a.Type)
-                .FirstOrDefaultAsync(m => m.AuctionId == id);
-            if (auction == null)
-            {
-                return NotFound();
-            }
 
             return View(auction);
         }
 
-        // POST: Auctions/Delete/5
+        // DELETE: Auctions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var auction = await _context.Auctions.FindAsync(id);
-            if (auction != null)
+            bool deleteStatus = false;
+
+            if (ModelState.IsValid)
             {
-                _context.Auctions.Remove(auction);
+                var response = await _httpClient.DeleteAsync(Const.APIEndPoint + $"api/auction/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<ServiceResult<object>>(content);
+
+                    if (result != null && result.IsSuccess)
+                    {
+                        deleteStatus = true;
+                    }
+                }
             }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool AuctionExists(int id)
-        {
-            return _context.Auctions.Any(e => e.AuctionId == id);
+            if (deleteStatus)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                return View();
+            }
         }
     }
 }

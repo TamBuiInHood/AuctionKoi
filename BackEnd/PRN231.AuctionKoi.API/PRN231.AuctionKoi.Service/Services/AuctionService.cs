@@ -101,30 +101,100 @@ namespace KoiAuction.Service.Services
         }
 
 
-        public async Task<AuctionModel> UpdateAuction(AuctionModel model)
+        public async Task<AuctionUpdateModel> UpdateAuction(AuctionUpdateModel model)
         {
+            // Tìm đấu giá cần cập nhật từ cơ sở dữ liệu
             var auction = await _unitOfWork.AuctionRepository.GetByCondition(x => x.AuctionId == model.AuctionId);
             if (auction == null)
             {
                 throw new Exception("This auction does not exist to update");
             }
 
-            // Update information
-            auction.AuctionName = model.AuctionName;
-            auction.AuctionDate = model.AuctionDate;
-            auction.StartTime = model.StartTime;
-            auction.EndTime = model.EndTime;
-            auction.MinIncrement = model.MinIncrement;
-            auction.Status = model.Status;
-            auction.Description = model.Description;
-            auction.AutionMethod = model.AutionMethod; // Corrected property name
-            auction.AuctionCode = model.AuctionCode;
-            auction.TimeSpan = model.TimeSpan;
-            auction.TypeId = model.TypeId;
+            // So sánh từng thuộc tính và chỉ cập nhật nếu khác
+            if (!string.IsNullOrWhiteSpace(model.AuctionName) && model.AuctionName != auction.AuctionName)
+            {
+                auction.AuctionName = model.AuctionName;
+            }
 
+            if (model.AuctionDate.HasValue && model.AuctionDate.Value != auction.AuctionDate)
+            {
+                auction.AuctionDate = model.AuctionDate.Value;
+            }
+
+            if (model.StartTime.HasValue && model.StartTime.Value != auction.StartTime)
+            {
+                auction.StartTime = model.StartTime.Value;
+            }
+
+            if (model.EndTime.HasValue && model.EndTime.Value != auction.EndTime)
+            {
+                auction.EndTime = model.EndTime.Value;
+            }
+
+            if (model.MinIncrement.HasValue && model.MinIncrement.Value != auction.MinIncrement)
+            {
+                auction.MinIncrement = model.MinIncrement.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.Status) && model.Status != auction.Status)
+            {
+                auction.Status = model.Status;
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.Description) && model.Description != auction.Description)
+            {
+                auction.Description = model.Description;
+            }
+
+            if (model.AutionMethod.HasValue && model.AutionMethod.Value != auction.AutionMethod)
+            {
+                auction.AutionMethod = model.AutionMethod.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.AuctionCode) && model.AuctionCode != auction.AuctionCode)
+            {
+                auction.AuctionCode = model.AuctionCode;
+            }
+
+            if (model.TimeSpan.HasValue && model.TimeSpan.Value != auction.TimeSpan)
+            {
+                auction.TimeSpan = model.TimeSpan.Value;
+            }
+
+            if (model.TypeId != auction.TypeId)
+            {
+                auction.TypeId = model.TypeId;
+            }
+
+            // Cập nhật đối tượng và lưu thay đổi vào cơ sở dữ liệu
             _unitOfWork.AuctionRepository.Update(auction);
             await _unitOfWork.SaveAsync();
-            return MapToAuctionModel(auction); // Convert back to AuctionModel
+
+            // Trả về dữ liệu cập nhật dưới dạng AuctionUpdateModel
+            return MapToAuctionUpdateModel(auction);
+        }
+
+
+        private AuctionUpdateModel MapToAuctionUpdateModel(Auction auction)
+        {
+            return new AuctionUpdateModel
+            {
+                AuctionId = auction.AuctionId,
+                AuctionName = auction.AuctionName,
+                AuctionDate = auction.AuctionDate,
+                StartTime = auction.StartTime,
+                EndTime = auction.EndTime,
+                MinIncrement = auction.MinIncrement,
+                Status = auction.Status,
+                Description = auction.Description,
+                CreateDate = auction.CreateDate,
+                AutionMethod = auction.AutionMethod, // Corrected property name
+                AuctionCode = auction.AuctionCode,
+                TimeSpan = auction.TimeSpan,
+                TypeId = auction.TypeId,
+                // TypeName = auction.Type.TypeName
+
+            };
         }
 
         private AuctionModel MapToAuctionModel(Auction auction)
@@ -143,9 +213,28 @@ namespace KoiAuction.Service.Services
                 AutionMethod = auction.AutionMethod, // Corrected property name
                 AuctionCode = auction.AuctionCode,
                 TimeSpan = auction.TimeSpan,
-                TypeId = auction.TypeId
+                TypeId = auction.TypeId,
+               // TypeName = auction.Type.TypeName
+
             };
         }
+
+        public async Task<List<AuctionTypeModel>> GetAuctionTypes()
+        {
+            // Giả sử bạn có repository cho AuctionType
+            var auctionTypes = await _unitOfWork.AuctionRepository.GetAuctionTypes();
+            return auctionTypes.Select(at => new AuctionTypeModel
+            {
+                TypeId = at.TypeId,
+                TypeName = at.TypeName
+            }).ToList();
+        }
+
+        public bool AuctionExists(int id)
+        {
+            return _unitOfWork.AuctionRepository.Any(a => a.AuctionId == id);
+        }
+
     }
 
 }

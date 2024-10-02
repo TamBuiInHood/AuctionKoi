@@ -33,5 +33,6 @@ public partial class Auction
 
     public virtual ICollection<DetailProposal> DetailProposals { get; set; } = new List<DetailProposal>();
 
-    public virtual AuctionType Type { get; set; } = null!;
+    public virtual AuctionType? Type { get; set; } // Cho phép Type là null
+
 }
