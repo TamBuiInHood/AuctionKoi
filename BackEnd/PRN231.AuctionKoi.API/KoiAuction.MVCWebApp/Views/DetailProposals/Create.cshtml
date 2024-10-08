@@ -10,7 +10,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="FishName" class="control-label"></label>
@@ -54,12 +54,14 @@
             </div>
             <div class="form-group">
                 <label asp-for="ImageUrl" class="control-label"></label>
-                <input asp-for="ImageUrl" class="form-control" />
+                <input type="hidden" asp-for="ImageUrl" class="form-control" />
+                <input type="file" name="imageFile" class="form-control" />
                 <span asp-validation-for="ImageUrl" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="VideoUrl" class="control-label"></label>
-                <input asp-for="VideoUrl" class="form-control" />
+                <input type="hidden" asp-for="VideoUrl" class="form-control" />
+                <input type="file" name="videoFile" class="form-control" accept="video/*" />
                 <span asp-validation-for="VideoUrl" class="text-danger"></span>
             </div>
             <div class="form-group">

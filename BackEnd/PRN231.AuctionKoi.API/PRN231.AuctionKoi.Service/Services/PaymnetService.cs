@@ -5,7 +5,6 @@ using KoiAuction.Service.Base;
 using KoiAuction.Service.ISerivice;
 using KoiAuction.BussinessModels.Pagination;
 using Microsoft.IdentityModel.Tokens;
-using PRN231.AuctionKoi.Common.Utils;
 using PRN231.AuctionKoi.Repository.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -15,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using KoiAuction.BussinessModels.PaymentModels;
 using KoiAuction.Repository.Entities;
+using KoiAuction.Common.Utils;
 
 
 namespace KoiAuction.Service.Services

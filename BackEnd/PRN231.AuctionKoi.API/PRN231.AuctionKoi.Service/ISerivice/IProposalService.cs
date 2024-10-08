@@ -1,8 +1,7 @@
-﻿using PRN231.AuctionKoi.Common.Utils;
-using KoiAuction.Service.Base;
+﻿using KoiAuction.Service.Base;
 using KoiAuction.BussinessModels.Proposal;
-using KoiAuction.BussinessModels.Filters;
-using KoiAuction.API.Payloads.Requests.Filters;
+using KoiAuction.Common.Utils;
+using Microsoft.AspNetCore.Http;
 
 namespace KoiAuction.Service.ISerivice
 {
@@ -16,5 +15,6 @@ namespace KoiAuction.Service.ISerivice
         Task<IBusinessResult> Delete(int id);
 
         Task<IBusinessResult> GetAllUser();
+        Task<IBusinessResult> UploadToFirebase(IFormFile file, int proposalId);
     }
 }

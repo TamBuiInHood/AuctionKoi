@@ -1,7 +1,7 @@
 ﻿using KoiAuction.Common.Constants;
 using Microsoft.AspNetCore.Mvc;
 
-namespace PRN231.AuctionKoi.Common.Utils
+namespace KoiAuction.Common.Utils
 {
     public class PaginationParameter
     {

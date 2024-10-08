@@ -16,6 +16,11 @@ using KoiAuction.Service.Base;
 using KoiAuction.Repository.Entities;
 using KoiAuction.Repository.IRepositories;
 using KoiAuction.Repository.Repositories;
+using Microsoft.AspNetCore.OData;
+using KoiAuction.BussinessModels.Proposal;
+using Microsoft.OData.Edm;
+using Microsoft.OData.ModelBuilder;
+using KoiAuction.BussinessModels.DetailProposalModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +34,17 @@ builder.Services.AddDbContext<Fa24Se1716Prn231G5KoiauctionContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 });
+
+builder.Services.AddControllers();
+builder.Services.AddControllers().AddOData(opt => opt
+    .AddRouteComponents("odata", GetEdmModel())
+    .Select()
+    .Expand()
+    .Filter()
+    .OrderBy()
+    .Count()
+    .SetMaxTop(100));
+
 
 
 builder.Services.AddSwaggerGen(option =>
@@ -134,3 +150,11 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+IEdmModel GetEdmModel()
+{
+    var builder = new ODataConventionModelBuilder();
+    builder.EntitySet<ProposalModel>("Proposals");
+    builder.EntitySet<DetailProposalModel>("DetailProposals");
+
+    return builder.GetEdmModel();
+}

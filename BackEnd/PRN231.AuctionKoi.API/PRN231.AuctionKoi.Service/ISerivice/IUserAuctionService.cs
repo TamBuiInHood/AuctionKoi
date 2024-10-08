@@ -1,8 +1,8 @@
-﻿using KoiAuction.BussinessModels.Filters;
-using KoiAuction.BussinessModels.PaymentModels;
+﻿using KoiAuction.BussinessModels.PaymentModels;
 using KoiAuction.BussinessModels.UserAuctionModels;
+using KoiAuction.Common.Utils;
+using KoiAuction.Common.Utils.Filters;
 using KoiAuction.Service.Base;
-using PRN231.AuctionKoi.Common.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;

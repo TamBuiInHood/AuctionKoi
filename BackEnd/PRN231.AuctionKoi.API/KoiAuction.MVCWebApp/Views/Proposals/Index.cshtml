@@ -1,55 +1,42 @@
-﻿@model IEnumerable<KoiAuction.BussinessModels.Proposal.ProposalModel>
+﻿@* @model IEnumerable<KoiAuction.BussinessModels.Proposal.ProposalModel> *@
+@model PaginatedViewModel<KoiAuction.BussinessModels.Proposal.ProposalModel>
 
 @{
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Proposal</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<div>
+    <input type="text" id="searchBox" placeholder="Search..." value="@Model.Search"/>
+    <button onclick="onSearchChange()" class="btn btn-primary text-white">Search</button>
+</div>
+
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FarmCode)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FarmName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Location)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AvatarUrl)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreateDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Owner)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UpdateDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsDeleted)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserFullName)
-            </th>
+            <th>@Html.ActionLink("FarmCode", "Index", new { sortBy = "farmcode", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("FarmName", "Index", new { sortBy = "farmname", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("Location", "Index", new { sortBy = "location", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("AvatarUrl", "Index", new { sortBy = "avatarUrl", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("CreateDate", "Index", new { sortBy = "createdate", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("Status", "Index", new { sortBy = "status", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("Description", "Index", new { sortBy = "description", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("Owner", "Index", new { sortBy = "owner", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("UpdateDate", "Index", new { sortBy = "updatedate", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("IsDeleted", "Index", new { sortBy = "isdeleted", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            <th>@Html.ActionLink("UserFullName", "Index", new { sortBy = "fullname", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.Items) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.FarmCode)
@@ -61,7 +48,8 @@
                 @Html.DisplayFor(modelItem => item.Location)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.AvatarUrl)
+                    <img src="@item.AvatarUrl" alt="hinhanh" style="width: 100px; height: 100px " />
+                @* @Html.DisplayFor(modelItem => item.AvatarUrl) *@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.CreateDate)
@@ -93,3 +81,53 @@
 }
     </tbody>
 </table>
+<ul class="pagination">
+    @if (Model.TotalPages > 1)
+    {
+        <!-- Show "Previous" button if not on the first page -->
+        @if (Model.PageIndex > 1)
+        {
+            <li class="page-item">
+            <a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.PageIndex - 1, pageSize = Model.PageSize, search = Model.Search, sortBy = Model.SortBy, direction = Model.SortDirection })">Previous</a>
+            </li>
+        }
+
+        <!-- Display page numbers -->
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            if (i == Model.PageIndex)
+            {
+                <li class="page-item active">
+                    <a href="#" class="current-page page-link">@i</a>
+                </li>
+            }
+            else
+            {
+                 <li class="page-item">
+                <a class="page-link" href="@Url.Action("Index", new { pageIndex = i, pageSize = Model.PageSize, search = Model.Search, sortBy = Model.SortBy, direction = Model.SortDirection })">@i</a>
+                </li>
+            }
+        }
+
+        <!-- Show "Next" button if not on the last page -->
+        @if (Model.PageIndex < Model.TotalPages)
+        {
+            <li class="page-item">
+            <a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.PageIndex + 1, pageSize = Model.PageSize, search = Model.Search, sortBy = Model.SortBy, direction = Model.SortDirection })">Next</a>
+            </li>
+        }
+    }
+</ul>
+<script>
+    function onSearchChange() {
+        var searchValue = document.getElementById('searchBox').value;
+        var url = '@Html.Raw(Url.Action("Index", new { pageIndex = 1, pageSize = Model.PageSize, search = "__SEARCHQUERY__", sortBy = Model.SortBy, direction = Model.SortDirection }))';
+
+        // Replace the placeholder with the actual search query
+        url = url.replace("__SEARCHQUERY__", encodeURIComponent(searchValue));
+        console.log(url);
+
+        // Redirect to the new URL with search query applied
+        window.location.href = url;
+    }
+</script>

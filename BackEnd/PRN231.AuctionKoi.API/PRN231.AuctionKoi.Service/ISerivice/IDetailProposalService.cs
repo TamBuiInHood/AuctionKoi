@@ -1,7 +1,8 @@
 ﻿using KoiAuction.BussinessModels.DetailProposalModel;
 using KoiAuction.BussinessModels.Proposal;
+using KoiAuction.Common.Utils;
 using KoiAuction.Service.Base;
-using PRN231.AuctionKoi.Common.Utils;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,9 @@ namespace KoiAuction.Service.ISerivice
         Task<IBusinessResult> GetAllType();
         Task<IBusinessResult> GetAllProposal();
         Task<IBusinessResult> GetAllAuction();
+
+        Task<IBusinessResult> UploadToFirebase(int type, IFormFile file, int detailProposalId);
+
 
     }
 }

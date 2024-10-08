@@ -1,7 +1,10 @@
-﻿namespace KoiAuction.BussinessModels.Proposal
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace KoiAuction.BussinessModels.Proposal
 {
     public class ProposalModel
     {
+        [Key]
         public int FarmId { get; set; }
         public string? FarmCode { get; set; }
 

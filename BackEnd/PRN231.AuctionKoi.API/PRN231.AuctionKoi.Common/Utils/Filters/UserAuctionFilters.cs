@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KoiAuction.BussinessModels.Filters
+namespace KoiAuction.Common.Utils.Filters
 {
     public class UserAuctionFilters
     {

@@ -34,7 +34,8 @@
             @Html.DisplayNameFor(model => model.AvatarUrl)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AvatarUrl)
+            <img src="@Model.AvatarUrl" alt="hinhanh" />
+            @* @Html.DisplayFor(model => model.AvatarUrl) *@
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.CreateDate)

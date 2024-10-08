@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading.Tasks;
 using KoiAuction.BussinessModels.Pagination;
 using KoiAuction.BussinessModels.Proposal;
 using KoiAuction.Common;
+using KoiAuction.MVCWebApp.Models;
 using KoiAuction.Repository.Entities;
 using KoiAuction.Service.Base;
 using Microsoft.AspNetCore.Mvc;
@@ -26,14 +28,18 @@ namespace KoiAuction.MVCWebApp.Controllers
         //}
 
         // GET: Proposals
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageIndex = 1, int pageSize = 2, string search = "", string sortBy = "", string direction = "")
         {
             //var auctionKoiOfficialContext = _context.Proposals.Include(p => p.User);
             //return View(await auctionKoiOfficialContext.ToListAsync());
-            
-            using (var httpClient = new HttpClient())
+            string apiUrl = $"proposals?page-index={pageIndex}&page-size={pageSize}&search-key={search}&sort-by={sortBy}&direction={direction}";
+
+            using (var httpClient = new HttpClient(new HttpClientHandler
             {
-                using (var response = await httpClient.GetAsync(Const.APIEndPoint + "proposals"))
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+            }))
+            {
+                using (var response = await httpClient.GetAsync(Const.APIEndPoint + apiUrl))
                 {
                     if (response.IsSuccessStatusCode)
                     {
@@ -43,7 +49,20 @@ namespace KoiAuction.MVCWebApp.Controllers
                         {
                             var data = JsonConvert.DeserializeObject<PageEntity<ProposalModel>>
                                 (result.Data.ToString());
-                            return View(data.List.ToList());
+                            // Create and populate the PaginatedViewModel
+                            var paginatedViewModel = new PaginatedViewModel<ProposalModel>
+                            {
+                                Items = data.List.ToList(),
+                                PageIndex = pageIndex,
+                                PageSize = pageSize,
+                                TotalPages = data.TotalPage,
+                                SortBy = sortBy,
+                                SortDirection = direction
+                            };
+
+                            // Pass the full view model to the view
+                            return View(paginatedViewModel);
+                           // return View(data.List.ToList());
                         }
                     }
                     return View();
@@ -69,7 +88,10 @@ namespace KoiAuction.MVCWebApp.Controllers
             //}
 
             //return View(proposal);
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+            }))
             {
                 using (var response = await httpClient.GetAsync(Const.APIEndPoint + "proposals/" + id))
                 {
@@ -102,18 +124,23 @@ namespace KoiAuction.MVCWebApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FarmName,Location,AvatarUrl,CreateDate,Status,Description,Owner,UpdateDate,UserId")] ProposalModel proposal)
+        public async Task<IActionResult> Create([Bind("FarmName,Location,AvatarUrl,CreateDate,Status,Description,Owner,UpdateDate,UserId")] ProposalModel proposal, IFormFile? avatarFile)
         {
 
             bool saveStatus = false;
-            if(proposal.UpdateDate > proposal.CreateDate)
+            if(proposal.UpdateDate < proposal.CreateDate)
             {
                 ModelState.AddModelError("UpdateDate", "Update Date must be greater than Create Date");
             }
             if(ModelState.IsValid)
             {
-                using (var httpClient = new HttpClient())
+                using (var httpClient = new HttpClient(new HttpClientHandler
                 {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+                }))
+                {
+                    var uploadFirebase = await UploadToFirebase(-1,avatarFile);
+                    proposal.AvatarUrl = uploadFirebase;
                     using (var response = await httpClient.PostAsJsonAsync(Const.APIEndPoint + "proposals/create-proposal", proposal))
                     {
                         if(response.IsSuccessStatusCode)
@@ -155,11 +182,14 @@ namespace KoiAuction.MVCWebApp.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             var proposal = new ProposalModel();
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+            }))
             {
                 using (var response = await httpClient.GetAsync(Const.APIEndPoint + "proposals/" + id))
                 {
-                    if(response.IsSuccessStatusCode)
+                    if (response.IsSuccessStatusCode)
                     {
                         var content = await response.Content.ReadAsStringAsync();
                         var result = JsonConvert.DeserializeObject<BusinessResult>(content);
@@ -192,16 +222,21 @@ namespace KoiAuction.MVCWebApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("FarmId,FarmCode,FarmName,Location,AvatarUrl,CreateDate,Status,Description,Owner,IsDeleted,UpdateDate,UserId")] ProposalModel proposal)
+        public async Task<IActionResult> Edit(int id, [Bind("FarmId,FarmCode,FarmName,Location,AvatarUrl,CreateDate,Status,Description,Owner,IsDeleted,UpdateDate,UserId")] ProposalModel proposal, IFormFile? avatarFile)
         {
             bool saveStatus = false;
             if(ModelState.IsValid)
             {
-                using (var httpClient = new  HttpClient())
+                using (var httpClient = new  HttpClient(new HttpClientHandler
                 {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+                }))
+                {
+                    var uploadFirebase = await UploadToFirebase(id, avatarFile);
+                    proposal.AvatarUrl = uploadFirebase;
                     using (var response = await httpClient.PutAsJsonAsync(Const.APIEndPoint + "proposals/" + proposal.FarmId, proposal))
                     {
-                        if(response.IsSuccessStatusCode)
+                        if (response.IsSuccessStatusCode)
                         {
                             var content = await response.Content.ReadAsStringAsync();
                             var result = JsonConvert.DeserializeObject<BusinessResult> (content);
@@ -262,7 +297,10 @@ namespace KoiAuction.MVCWebApp.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             var proposal = new ProposalModel();
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+            }))
             {
                 using (var response = await httpClient.GetAsync(Const.APIEndPoint + "proposals/" + id))
                 {
@@ -304,7 +342,10 @@ namespace KoiAuction.MVCWebApp.Controllers
             bool saveStatus = false;
             if (ModelState.IsValid)
             {
-                using (var httpClient = new HttpClient())
+                using (var httpClient = new HttpClient(new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+                }))
                 {
                     using (var response = await httpClient.DeleteAsync(Const.APIEndPoint + "proposals/" + id))
                     {
@@ -352,7 +393,10 @@ namespace KoiAuction.MVCWebApp.Controllers
 
         public async Task<List<User>> GetUsers()
         {
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+            }))
             {
                 using (var response = await httpClient.GetAsync(Const.APIEndPoint + "proposals/user"))
                 {
@@ -368,6 +412,47 @@ namespace KoiAuction.MVCWebApp.Controllers
                         }
                     }
                     return new List<User>();
+                }
+
+            }
+        }
+
+        public async Task<string> UploadToFirebase(int proposalId, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return "";
+            }
+
+            using (var httpClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Bypass SSL validation (for testing)
+            }))
+            {
+                var contentOfFile = new MultipartFormDataContent();
+                var stream = new MemoryStream();
+
+                await file.CopyToAsync(stream);
+                stream.Position = 0; // Reset the stream position to the beginning
+
+                var fileContent = new StreamContent(stream);
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+
+                // Add the file content to the multipart form data
+                contentOfFile.Add(fileContent, "file", file.FileName);
+                using (var response = await httpClient.PostAsync(Const.APIEndPoint + "proposals/upload?proposalId=" + proposalId, contentOfFile))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var result = JsonConvert.DeserializeObject<BusinessResult>(content);
+                        if (result != null && result.Data != null)
+                        {
+                            var data = result.Data.ToString();
+                            return data;
+                        }
+                    }
+                    return "";
                 }
 
             }

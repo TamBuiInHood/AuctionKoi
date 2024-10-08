@@ -1,4 +1,5 @@
-﻿@model IEnumerable<KoiAuction.BussinessModels.DetailProposalModel.DetailProposalModel>
+﻿@* @model IEnumerable<KoiAuction.BussinessModels.DetailProposalModel.DetailProposalModel> *@
+    @model PaginatedViewModel<KoiAuction.BussinessModels.DetailProposalModel.DetailProposalModel>
 
 
 @{
@@ -10,83 +11,105 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<div>
+    <input type="text" id="searchBox" placeholder="Search..." value="@Model.Search" />
+    <button onclick="onSearchChange()" class="btn btn-primary text-white">Search</button>
+</div>
+
 <table class="table">
     <thead>
         <tr>
-            <th>
+            <th>@Html.ActionLink("FishCode", "Index", new { sortBy = "fishcode", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.FishCode)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("FishName", "Index", new { sortBy = "fishname", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.FishName)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("Gender", "Index", new { sortBy = "gender", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.Gender)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("Age", "Index", new { sortBy = "age", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.Age)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("Length", "Index", new { sortBy = "length", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+          @*   <th>
                 @Html.DisplayNameFor(model => model.Length)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("Weight", "Index", new { sortBy = "weight", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.Weight)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("Rating", "Index", new { sortBy = "rating", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.Rating)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("Status", "Index", new { sortBy = "status", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("CreateDate", "Index", new { sortBy = "createdate", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.CreateDate)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("UpdateDate", "Index", new { sortBy = "updatedate", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.UpdateDate)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("Description", "Index", new { sortBy = "description", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageUrl)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.VideoUrl)
-            </th>
-            <th>
+            </th> *@
+            
+            <th>@Html.ActionLink("Color", "Index", new { sortBy = "color", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.Color)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("InitialPrice", "Index", new { sortBy = "initialprice", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.InitialPrice)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("FinalPrice", "Index", new { sortBy = "finalprice", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+            @* <th>
                 @Html.DisplayNameFor(model => model.FinalPrice)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("Index", "Index", new { sortBy = "index", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.Index)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("TimeSpan", "Index", new { sortBy = "timespan", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.TimeSpan)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("MinIncrement", "Index", new { sortBy = "minincrement", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.MinIncrement)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("AuctionFee", "Index", new { sortBy = "auctionfee", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.AuctionFee)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("AuctionName", "Index", new { sortBy = "auctionname", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.AuctionName)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("FarmName", "Index", new { sortBy = "farmname", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.FarmName)
-            </th>
-            <th>
+            </th> *@
+            <th>@Html.ActionLink("FishTypeName", "Index", new { sortBy = "fishtypename", direction = Model.SortDirection == "desc" ? "asc" : "desc" })</th>
+           @*  <th>
                 @Html.DisplayNameFor(model => model.FishTypeName)
-            </th>
+            </th> *@
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.Items) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.FishCode)
@@ -120,12 +143,6 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageUrl)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.VideoUrl)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Color)
@@ -166,3 +183,53 @@
 }
     </tbody>
 </table>
+<ul class="pagination">
+    @if (Model.TotalPages > 1)
+    {
+        <!-- Show "Previous" button if not on the first page -->
+        @if (Model.PageIndex > 1)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.PageIndex - 1, pageSize = Model.PageSize, search = Model.Search, sortBy = Model.SortBy, direction = Model.SortDirection })">Previous</a>
+            </li>
+        }
+
+        <!-- Display page numbers -->
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            if (i == Model.PageIndex)
+            {
+                <li class="page-item active">
+                    <a href="#" class="current-page page-link">@i</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { pageIndex = i, pageSize = Model.PageSize, search = Model.Search, sortBy = Model.SortBy, direction = Model.SortDirection })">@i</a>
+                </li>
+            }
+        }
+
+        <!-- Show "Next" button if not on the last page -->
+        @if (Model.PageIndex < Model.TotalPages)
+        {
+            <li class="page-item">
+                <a class="page-link" href="@Url.Action("Index", new { pageIndex = Model.PageIndex + 1, pageSize = Model.PageSize, search = Model.Search, sortBy = Model.SortBy, direction = Model.SortDirection })">Next</a>
+            </li>
+        }
+    }
+</ul>
+<script>
+    function onSearchChange() {
+        var searchValue = document.getElementById('searchBox').value;
+        var url = '@Html.Raw(Url.Action("Index", new { pageIndex = 1, pageSize = Model.PageSize, search = "__SEARCHQUERY__", sortBy = Model.SortBy, direction = Model.SortDirection }))';
+
+        // Replace the placeholder with the actual search query
+        url = url.replace("__SEARCHQUERY__", encodeURIComponent(searchValue));
+        console.log(url);
+
+        // Redirect to the new URL with search query applied
+        window.location.href = url;
+    }
+</script>

@@ -1,4 +1,4 @@
-﻿@using PRN231.AuctionKoi.Common.Utils.Common.Enums
+﻿@using KoiAuction.Common.Enums
 @{
     Layout = "~/Views/Shared/_ClientLayout.cshtml";
     ViewData["Title"] = "Login";
@@ -92,7 +92,7 @@
                         localStorage.setItem('roleId', userData.roleId);
 
                         // Điều hướng tới trang chủ hoặc trang khác
-                        if (userData.roleId == UserRole.Admin) {
+                        if (userData.roleId == 1) {
                             window.location.href = '/Home/Index';
                         } else {
                             window.location.href = '/';

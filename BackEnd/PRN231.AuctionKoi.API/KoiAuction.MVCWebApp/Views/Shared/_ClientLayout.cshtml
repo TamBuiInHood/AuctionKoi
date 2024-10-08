@@ -1,4 +1,4 @@
-﻿@using PRN231.AuctionKoi.Common.Utils.Common.Enums
+﻿@using KoiAuction.Common.Enums
 @{
     var userRoles = new
     {
@@ -85,7 +85,7 @@
                                 var roleId = localStorage.getItem('roleId');
 
                                 if (roleId == UserRole.Admin) {
-                                    window.location.href = '/Home/Index'; Chuyển hướng nếu là Admin
+                                    window.location.href = '/Home/Index';
                                 }
 
                                 if (userId && userName) {

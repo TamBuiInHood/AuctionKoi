@@ -82,13 +82,17 @@
             @Html.DisplayNameFor(model => model.ImageUrl)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ImageUrl)
+            <img src="@Model.ImageUrl" alt="hinhanh" style="width: 100px; height: 100px " />
+            @* @Html.DisplayFor(model => model.ImageUrl) *@
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.VideoUrl)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.VideoUrl)
+            <video controls>
+                <source src="@Model.VideoUrl" type="video/mp4">
+            </video>
+            @* @Html.DisplayFor(model => model.VideoUrl) *@
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Color)

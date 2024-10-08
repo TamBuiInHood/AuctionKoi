@@ -1,4 +1,4 @@
-﻿namespace KoiAuction.API.Payloads.Requests.Filters
+﻿namespace KoiAuction.Common.Utils.Filters
 {
     public class NoFilters
     {

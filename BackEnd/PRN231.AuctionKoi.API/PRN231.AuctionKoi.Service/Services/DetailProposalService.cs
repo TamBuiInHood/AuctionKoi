@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
+using Firebase.Storage;
 using KoiAuction.BussinessModels.DetailProposalModel;
 using KoiAuction.BussinessModels.Pagination;
 using KoiAuction.BussinessModels.Proposal;
 using KoiAuction.Common;
+using KoiAuction.Common.Utils;
 using KoiAuction.Repository.Entities;
 using KoiAuction.Service.Base;
 using KoiAuction.Service.ISerivice;
-using PRN231.AuctionKoi.Common.Utils;
+using Microsoft.AspNetCore.Http;
 using PRN231.AuctionKoi.Repository.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -253,7 +255,7 @@ namespace KoiAuction.Service.Services
                 }
                 else
                 {
-                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG, new List<DetailProposalModel>());
+                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG, new PageEntity<DetailProposalModel>());
                 }
             }
             catch (Exception ex)
@@ -455,6 +457,22 @@ namespace KoiAuction.Service.Services
                     {
                         checkExist.MinIncrement = entityUpdate.MinIncrement;
                     }
+                    if (entityUpdate.AuctionFee > 0)
+                    {
+                        checkExist.AuctionFee = entityUpdate.AuctionFee;
+                    }
+                    if (entityUpdate.FishTypeId > 0)
+                    {
+                        checkExist.FishTypeId = entityUpdate.FishTypeId;
+                    }
+                    if (entityUpdate.FarmId > 0)
+                    {
+                        checkExist.FarmId = entityUpdate.FarmId;
+                    }
+                    if (entityUpdate.AuctionId > 0)
+                    {
+                        checkExist.AuctionId = entityUpdate.AuctionId;
+                    }
                     _unitOfWork.DetailProposalRepository.Update(checkExist);
                     var result = await _unitOfWork.SaveAsync();
                     if (result > 0)
@@ -473,6 +491,65 @@ namespace KoiAuction.Service.Services
             catch (Exception ex)
             {
 
+                return new BusinessResult(Const.ERROR_EXCEPTION, Const.FAIL_UPDATE_MSG, ex.Message.ToString());
+            }
+        }
+
+        public async Task<IBusinessResult> UploadToFirebase(int type, IFormFile file, int detailProposalId)
+        {
+            try
+            {
+                var existDetailProposal = await _unitOfWork.DetailProposalRepository.GetByID(detailProposalId);
+                var firebaseStorage = new FirebaseStorage(FirebaseConfig.STORAGE_BUCKET);
+                string fileName = Path.GetFileName(file.FileName);
+                await firebaseStorage.Child("detailProposal").Child(fileName).PutAsync(file.OpenReadStream());
+                var downloadUrl = await firebaseStorage.Child("detailProposal").Child(fileName).GetDownloadUrlAsync();
+                if (existDetailProposal != null)
+                {
+                    if (!string.IsNullOrEmpty(existDetailProposal.ImageUrl) && type == 1)
+                    {
+                        // Parse the image URL to get the file name
+                        var fileNameDelete = existDetailProposal.ImageUrl.Substring(existDetailProposal.ImageUrl.LastIndexOf('/') + 1);
+                        fileNameDelete = fileNameDelete.Split('?')[0]; // Remove the query parameters
+                        var encodedFileName = Path.GetFileName(fileNameDelete);
+                        var fileNameOfficial = Uri.UnescapeDataString(encodedFileName);
+                        // Delete the image from Firebase Storage
+                        var fileRef = firebaseStorage.Child(fileNameOfficial);
+                        await fileRef.DeleteAsync();
+                       
+                    }
+                    if(!string.IsNullOrEmpty(existDetailProposal.VideoUrl) && type == 2)
+                    {
+                        // Parse the image URL to get the file name
+                        var fileNameDelete = existDetailProposal.VideoUrl.Substring(existDetailProposal.VideoUrl.LastIndexOf('/') + 1);
+                        fileNameDelete = fileNameDelete.Split('?')[0]; // Remove the query parameters
+                        var encodedFileName = Path.GetFileName(fileNameDelete);
+                        var fileNameOfficial = Uri.UnescapeDataString(encodedFileName);
+                        // Delete the image from Firebase Storage
+                        var fileRef = firebaseStorage.Child(fileNameOfficial);
+                        await fileRef.DeleteAsync();
+                    }
+                    if(type == 1)
+                    {
+                        existDetailProposal.ImageUrl = downloadUrl;
+                    }
+                    else
+                    {
+                        existDetailProposal.VideoUrl = downloadUrl;
+                    }
+                }
+                if (downloadUrl != null)
+                {
+                    return new BusinessResult(Const.SUCCESS_UPDATE_CODE, Const.SUCCESS_UPDATE_MSG, downloadUrl);
+                }
+                else
+                {
+                    return new BusinessResult(Const.FAIL_UPDATE_CODE, Const.FAIL_UPDATE_MSG, downloadUrl);
+                }
+
+            }
+            catch (Exception ex)
+            {
                 return new BusinessResult(Const.ERROR_EXCEPTION, Const.FAIL_UPDATE_MSG, ex.Message.ToString());
             }
         }

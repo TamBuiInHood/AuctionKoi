@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KoiAuction.Repository.Entities;
 using KoiAuction.Service.ISerivice;
-using PRN231.AuctionKoi.Common.Utils;
 using KoiAuction.Service.Base;
 using KoiAuction.BussinessModels.Proposal;
 using KoiAuction.BussinessModels.DetailProposalModel;
 using KoiAuction.Service.Services;
 using PRN231.AuctionKoi.API.Payloads;
+using KoiAuction.Common.Utils;
+using Microsoft.AspNetCore.OData.Query;
+using KoiAuction.Common;
 
 namespace KoiAuction.API.Controllers
 {
@@ -29,12 +31,21 @@ namespace KoiAuction.API.Controllers
         }
 
         // GET: api/DetailProposals
+        [EnableQuery]
         [HttpGet(APIRoutes.DetailProposal.Get, Name = "Get All Detail Proposal")]
         public async Task<IBusinessResult> GetDetailProposals(PaginationParameter paginationParameter)
         {
             return await _detailProposalService.Get(paginationParameter);
         }
 
+        [EnableQuery]
+        [HttpGet(APIRoutes.DetailProposal.GetOData, Name = "Get All Detail Proposal by Odata")]
+        public async Task<IActionResult> GetProposalsByOData(PaginationParameter paginationParameter)
+        {
+            var proposals = await _detailProposalService.Get(paginationParameter);
+            var queryableData = ODataResultConverter.ConvertDetailProposalToQueryable(proposals);
+            return Ok(queryableData);
+        }
         // GET: api/DetailProposals/5
         [HttpGet(APIRoutes.DetailProposal.GetByID, Name = "Get Detail Proposal By id")]
         public async Task<IBusinessResult> GetDetailProposal([FromRoute(Name = "detail-proposal-id")] int id)
@@ -119,6 +130,14 @@ namespace KoiAuction.API.Controllers
         public async Task<IBusinessResult> GetAllProposals()
         {
             return await _detailProposalService.GetAllProposal();
+        }
+
+        [HttpPost(APIRoutes.DetailProposal.UploadToFirebase, Name = "Upload File to Firebase Of DetailProposal")]
+        public async Task<IBusinessResult> UploadToFirebase([FromQuery(Name = "detailProposalId")] int detailProposalId,
+            [FromQuery(Name = "type")] int type,
+            IFormFile file)
+        {
+            return await _detailProposalService.UploadToFirebase(type,file, detailProposalId);
         }
 
     }

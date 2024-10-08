@@ -6,12 +6,12 @@ using KoiAuction.Service.Base;
 using KoiAuction.Service.ISerivice;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.IdentityModel.Tokens;
-using PRN231.AuctionKoi.Common.Utils;
-using PRN231.AuctionKoi.Common.Utils.Common.Enums;
 using PRN231.AuctionKoi.Repository.UnitOfWork;
 using System.Linq.Expressions;
 using KoiAuction.Repository.Entities;
-using KoiAuction.API.Payloads.Requests.Filters;
+using KoiAuction.Common.Utils;
+using Microsoft.AspNetCore.Http;
+using Firebase.Storage;
 
 namespace KoiAuction.Service.Services
 {
@@ -156,7 +156,7 @@ namespace KoiAuction.Service.Services
                 }
                 else
                 {
-                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG, new List<ProposalModel>());
+                    return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG, new PageEntity<ProposalModel>());
                 }
             }
             catch (Exception ex)
@@ -302,6 +302,46 @@ namespace KoiAuction.Service.Services
             catch (Exception ex)
             {
 
+                return new BusinessResult(Const.ERROR_EXCEPTION, Const.FAIL_UPDATE_MSG, ex.Message.ToString());
+            }
+        }
+
+        public async Task<IBusinessResult> UploadToFirebase(IFormFile file, int proposalId)
+        {
+            try
+            {
+                var existProposal = await _unitOfWork.ProposalRepository.GetByID(proposalId);
+                var firebaseStorage = new FirebaseStorage(FirebaseConfig.STORAGE_BUCKET);
+                string fileName = Path.GetFileName(file.FileName);
+                await firebaseStorage.Child("proposal").Child(fileName).PutAsync(file.OpenReadStream());
+                var downloadUrl = await firebaseStorage.Child("proposal").Child(fileName).GetDownloadUrlAsync();
+                if (existProposal != null)
+                {
+                    if (!string.IsNullOrEmpty(existProposal.AvatarUrl))
+                    {
+                        // Parse the image URL to get the file name
+                        var fileNameDelete = existProposal.AvatarUrl.Substring(existProposal.AvatarUrl.LastIndexOf('/') + 1);
+                        fileNameDelete = fileNameDelete.Split('?')[0]; // Remove the query parameters
+                        var encodedFileName = Path.GetFileName(fileNameDelete);
+                        var fileNameOfficial = Uri.UnescapeDataString(encodedFileName);
+                        // Delete the image from Firebase Storage
+                        var fileRef = firebaseStorage.Child(fileNameOfficial);
+                        await fileRef.DeleteAsync();
+                    }
+                    existProposal.AvatarUrl = downloadUrl;
+                }
+                    if (downloadUrl != null)
+                    {
+                        return new BusinessResult(Const.SUCCESS_UPDATE_CODE, Const.SUCCESS_UPDATE_MSG, downloadUrl);
+                    }
+                    else
+                    {
+                        return new BusinessResult(Const.FAIL_UPDATE_CODE, Const.FAIL_UPDATE_MSG, downloadUrl);
+                    }
+
+            }
+            catch (Exception ex)
+            {
                 return new BusinessResult(Const.ERROR_EXCEPTION, Const.FAIL_UPDATE_MSG, ex.Message.ToString());
             }
         }

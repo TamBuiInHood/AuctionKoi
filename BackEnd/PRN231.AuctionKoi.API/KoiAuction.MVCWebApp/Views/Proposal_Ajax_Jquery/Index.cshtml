@@ -46,7 +46,7 @@
             {
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
-                    <h5 class="modal-title" id="proposalModalLabel">Bank</h5>
+                    <h5 class="modal-title" id="proposalModalLabel">Proposal</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -70,7 +70,7 @@
             alert("Load data progressing ...");
 
             $.ajax({
-                url: 'http://localhost:5155/auction-koi/proposals',
+                url: 'https://localhost:7094/auction-koi/proposals',
                 type: "GET",
                 contentType: "application/json;charset=utf-8",
                 dataType: "json",
@@ -84,7 +84,7 @@
                         html += '<td>' + item.farmCode + '</td>';
                         html += '<td>' + item.farmName + '</td>';
                         html += '<td>' + item.location + '</td>';
-                        html += '<td>' + item.avatarUrl + '</td>';
+                        html += '<td>' + `<img src="${item.avatarUrl}" alt="hinhanh" style="width: 100px; height: 100px" />` + '</td>';
                         html += '<td>' + item.createDate + '</td>';
                         html += '<td>' + item.status + '</td>';
                         html += '<td>' + item.description + '</td>';

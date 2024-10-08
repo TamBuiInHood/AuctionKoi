@@ -41,14 +41,15 @@
                 <img class="img-fluid p-3"
                      style="opacity: 1; transition: opacity 0.5s"
                      loading="lazy"
+                     id="fishImage"
                      src="https://mjjlqhnswgbzvxfujauo.supabase.co/storage/v1/object/public/auctions/65%20Big%20Auction/photos/Goshiki%20auction.png"
                      alt="Goshiki" />
             </div>
             <div class="mt-2">
                 <button onclick="toggleVideo(this)"
                         class="detail-proposal-video transparent-border position-relative d-none d-sm-grid d-flex justify-content-center align-items-center overflow-hidden w-100">
-                    <video loop="" class="w-100" style="aspect-ratio: 16 / 9">
-                        <source src="https://mjjlqhnswgbzvxfujauo.supabase.co/storage/v1/object/public/auctions/65%20Big%20Auction/videos/Goshiki.mp4?t=2024-09-17T16%3A16%3A09.761Z"
+                    <video id="fishVideo" loop="" class="w-100" style="aspect-ratio: 16 / 9">
+                        <source  src="https://mjjlqhnswgbzvxfujauo.supabase.co/storage/v1/object/public/auctions/65%20Big%20Auction/videos/Goshiki.mp4?t=2024-09-17T16%3A16%3A09.761Z"
                                 type="video/mp4" />
                     </video>
                     <svg id="playIcon"
@@ -93,7 +94,7 @@
                 <div>
                     <header class="card-proposal-header">
                         <div class="w-100 d-flex justify-content-between align-items-center flex-warp">
-                            <h1 class="h5 fw-600 mb-1">Goshiki</h1>
+                            <h1 id="fishName" class="h5 fw-600 mb-1">Goshiki</h1>
                             <span class="proposal-tag">
                                 <svg xmlns="http://www.w3.org/2000/svg"
                                      aria-hidden="true"
@@ -115,7 +116,7 @@
                         <div class="d-flex justify-content-between flex-wrap w-100">
                             <!-- Rating icons -->
                             <span class="d-flex w-auto">
-                                <div class="ratings d-flex text-body align-items-center justify-content-center">
+                                <div id="ratingContainer" class="ratings d-flex text-body align-items-center justify-content-center">
                                     <!-- Star icons -->
                                     <span class="rating-icon">
                                         <svg xmlns="http://www.w3.org/2000/svg"
@@ -195,14 +196,14 @@
                                 </span>
                                 <span class="card-proposal-section-detail d-flex align-items-center justify-content-between pr-2 w-100">
                                 <dt class="" data-svelte-h="svelte-112tf8t">Sex</dt>
-                                <dd class="fw-600 mp-0">Unknown</dd>
+                                <dd id="fishGender" class="fw-600 mp-0">Unknown</dd>
                                 </span>
                             </div>
                             <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 card-proposal-section">
                                 <span class="card-proposal-section-icon"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1.5rem" height="1.5rem" viewBox="0 0 24 24" class="iconify iconify--majesticons"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 12l-1.586 1.586a2 2 0 0 0 0 2.828l3.172 3.172a2 2 0 0 0 2.828 0l9.172-9.172a2 2 0 0 0 0-2.828l-3.172-3.172a2 2 0 0 0-2.828 0L12 6m-6 6l2 2m-2-2l3-3m3-3l2 2m-2-2L9 9m0 0l3 3"></path></svg></span>
                                 <span class="card-proposal-section-detail d-flex align-items-center justify-content-between pr-2 w-100">
                                 <dt class="" data-svelte-h="svelte-bjopq9">Length</dt>
-                                <dd class="fw-600 mp-0">41cm</dd>
+                                <dd id="fishLength" class="fw-600 mp-0">41cm</dd>
                                 </span>
                             </div>
                         </div>
@@ -216,7 +217,7 @@
                                 </span>
                                 <span class="card-proposal-section-detail d-flex align-items-center justify-content-between pr-2 w-100">
                                 <dt class="" data-svelte-h="svelte-1y9xqqs">Breeder</dt>
-                                <dd class="fw-600 mp-0">Kanno</dd>
+                                <dd id="fishFarmName" class="fw-600 mp-0">Kanno</dd>
                                 </span>
                             </div>
 
@@ -225,8 +226,8 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1.5rem" height="1.5rem" viewBox="0 0 24 24" class="iconify iconify--majesticons"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M7 9a4 4 0 0 0-4 4v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a4 4 0 0 0-4-4v0M7 9h10M7 9V6m10 3V6m-5 0v3m0-6h.01M7 3h.01M17 3h.01"></path><path d="M3 13c0 1 .6 3 3 3s3-2 3-3c0 1 .6 3 3 3s3-2 3-3c0 1 .6 3 3 3s3-2 3-3"></path></g></svg>
                                 </span>
                                 <span class="card-proposal-section-detail d-flex align-items-center justify-content-between pr-2 w-100">
-                                <dt class="" data-svelte-h="svelte-pgao7e">Age</dt>
-                                <dd class="fw-600 mp-0">Nisai (2y)</dd>
+                                <dt  class="" data-svelte-h="svelte-pgao7e">Age</dt>
+                                <dd id="fishAge" class="fw-600 mp-0">Nisai (2y)</dd>
                                 </span>
                             </div>
                         </div>
@@ -239,7 +240,7 @@
                     <header class="card-proposal-header">
                         <div class="w-100 d-flex justify-content-between align-items-center flex-warp">
                             <h1 class="h5 fw-600 mb-1">Current Price</h1>
-                            <span class="proposal-tag fs-3 px-4 fw-600 d-flex align-items-center justify-content-center">
+                            <span id="fishInitialPrice" class="proposal-tag fs-3 px-4 fw-600 d-flex align-items-center justify-content-center">
                                 $1,000
                             </span>
                         </div>
@@ -463,11 +464,19 @@
     });
 </script>
 <script>
-    const currentPrice = 1000;
-    let stepPrice = 50;
-    let quantity = 1;
+   
 
     function calculateTotal() {
+        // Truy vấn thẻ bằng id
+        let priceText = document.getElementById("fishInitialPrice").textContent;
+
+        // Loại bỏ ký hiệu '$' và dấu phẩy ','
+        let priceNumber = priceText.replace('$', '').replace(',', '');
+
+        // Chuyển sang kiểu số
+        let currentPrice = parseFloat(priceNumber);
+        let stepPrice = document.getElementById('step-price').value;
+        let quantity = document.getElementById('quantity').value;
         const totalPrice = currentPrice + stepPrice * quantity;
         document.getElementById('total-price').value = `$${totalPrice}`;
         document.getElementById('bid-total').innerText = `$${totalPrice}`;
@@ -516,3 +525,72 @@
         alert(`Bạn đã đặt giá: $${currentPrice + stepPrice * quantity}`);
     }
 </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadData();
+
+        });
+        // Lấy toàn bộ URL hiện tại
+        const url = window.location.href;
+        
+
+        // Tạo một đối tượng URL để dễ dàng thao tác
+        const params = new URL(url).searchParams;
+        console.log("Params", params);
+        // const id = params.get('id');
+        const id = 1;
+
+        function loadData() {
+            $.ajax({
+                url: `https://localhost:7094/auction-koi/detailProposal/${id}`,
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    var data = result.data;
+                    $('#fishName').text(data.fishName);
+                    $('#fishImage').attr('src', data.imageUrl);
+                    $('#fishVideo').attr('src', data.videoUrl);
+                    $('#fishGender').text(data.gender);
+                    $('#fishLength').text(data.length);
+                    $('#fishAge').text(data.age);
+                    $('#fishFarmName').text(data.farmName);
+                    $('#fishInitialPrice').text(data.initialPrice);
+                    $('#step-price').val(data.minIncrement);
+                    $('#total-price').val(data.initialPrice);
+                    generateRatingStars(data.rating);
+                },
+                error: function (xhr, error) {
+                    alert(xhr.statusText);
+                }
+            });
+        }
+
+    // Hàm tạo các biểu tượng sao
+    function generateRatingStars(rating) {
+        // Lấy container chứa các biểu tượng sao
+        const ratingContainer = document.getElementById('ratingContainer');
+
+        // Xóa các sao cũ (nếu có) để tránh lặp lại khi tạo mới
+        ratingContainer.innerHTML = '';
+
+        // Lặp qua số lượng rating và tạo ra các biểu tượng sao
+        for (let i = 0; i < rating; i++) {
+            // Tạo phần tử span chứa biểu tượng sao
+            const starSpan = document.createElement('span');
+            starSpan.classList.add('rating-icon');
+
+            // Tạo phần tử SVG cho biểu tượng sao
+            const starSVG = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="2rem" height="2rem" viewBox="0 0 24 24">
+                                   <path fill="currentColor" d="m12 17.27l4.15 2.51c.76.46 1.69-.22 1.49-1.08l-1.1-4.72l3.67-3.18c.67-.58.31-1.68-.57-1.75l-4.83-.41l-1.89-4.46c-.34-.81-1.5-.81-1.84 0L9.19 8.63l-4.83.41c-.88.07-1.24 1.17-.57 1.75l3.67 3.18l-1.1 4.72c-.2.86.73 1.54 1.49 1.08z"></path>
+                                 </svg>`;
+
+            // Thêm biểu tượng SVG vào span
+            starSpan.innerHTML = starSVG;
+
+            // Thêm span vào container
+            ratingContainer.appendChild(starSpan);
+        }
+    }
+
+    </script>

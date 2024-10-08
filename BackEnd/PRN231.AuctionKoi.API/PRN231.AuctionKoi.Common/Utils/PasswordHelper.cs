@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Security.Cryptography;
 
-namespace PRN231.AuctionKoi.Common.Utils
+namespace KoiAuction.Common.Utils
 {
     public class PasswordHelper
     {
